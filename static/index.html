@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Workmate Deep Research</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF9F5; --panel:#F0EEE6; --card:#FFFFFF; --ink:#141413; --muted:#6B6A64;
+  --line:#E5E2D8; --accent:#D97757; --accent-dark:#C6613F; --green:#4D7C5B;
+  --blue:#3E6FB0; --amber:#B7791F;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.55}
+.app{display:grid;grid-template-columns:280px 1fr;height:100vh}
+aside{background:var(--panel);border-right:1px solid var(--line);padding:22px 16px;overflow-y:auto}
+main{overflow-y:auto;padding:40px 24px 80px}
+.wrap{max-width:760px;margin:0 auto}
+.brand{font-family:var(--serif);font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;margin-bottom:18px}
+.brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+.side-label{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 8px 8px}
+select,textarea,button{font-family:inherit}
+select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:14px}
+.new-btn{width:100%;margin-top:14px;padding:9px 12px;border:1px solid var(--line);background:var(--card);border-radius:8px;cursor:pointer;font-size:14px}
+.new-btn:hover{border-color:var(--accent)}
+.hist-item{padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px}
+.hist-item:hover{background:#E8E5DA}
+.hist-item.active{background:#E8E5DA}
+.hist-q{font-size:14px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hist-m{font-size:12px;color:var(--muted);margin-top:2px}
+.hist-empty{font-size:13px;color:var(--muted);padding:0 10px}
+
+h1{font-family:var(--serif);font-weight:500;font-size:34px;line-height:1.2;margin:0 0 8px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 26px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+textarea{width:100%;border:none;outline:none;resize:none;font-size:16px;min-height:76px;background:transparent;color:var(--ink)}
+.src-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line);align-items:center}
+.src{display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;cursor:pointer;user-select:none}
+.src input{accent-color:var(--accent)}
+.src.off{opacity:.45;cursor:not-allowed}
+.src small{color:var(--muted);font-size:11px}
+.go{margin-left:auto;background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:9px;font-size:14px;font-weight:500;cursor:pointer}
+.go:hover{background:var(--accent-dark)}
+.go:disabled{opacity:.5;cursor:not-allowed}
+.examples{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ex{font-size:13px;color:var(--muted);border:1px solid var(--line);background:transparent;padding:6px 12px;border-radius:999px;cursor:pointer}
+.ex:hover{color:var(--ink);border-color:var(--accent)}
+
+.progress{margin-top:28px}
+.q-title{font-family:var(--serif);font-size:22px;margin:0 0 14px}
+.steps{list-style:none;margin:0;padding:0}
+.step{display:flex;gap:12px;align-items:flex-start;padding:7px 0;color:var(--muted)}
+.ic{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);flex:none;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+.step.done{color:var(--ink)}
+.step.done .ic{background:var(--green);border-color:var(--green)}
+.step.running{color:var(--ink);font-weight:500}
+.step.running .ic{border-color:var(--accent);background:#fff;position:relative}
+.step.running .ic::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1.1s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+.step-d{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:1px}
+.err{background:#FBEDE8;border:1px solid #F0C9BC;color:#8A3A22;padding:12px 14px;border-radius:10px;margin-top:16px;font-size:14px}
+
+.report{margin-top:30px}
+.rep-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.badge{display:inline-block;font-size:12px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.ev{color:var(--green);border-color:#BFD3C6;background:#EEF4F0}
+.badge.inf{color:var(--amber);border-color:#E8D3A8;background:#FBF4E4}
+.badge.multi{color:var(--blue);border-color:#BFD0E6;background:#EEF3FA}
+.badge.single{color:var(--muted)}
+.sec{margin-top:34px}
+.sec h2{font-family:var(--serif);font-weight:500;font-size:22px;margin:0 0 12px}
+.summary{font-family:var(--serif);font-size:18px;line-height:1.6}
+.stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.card h3{margin:0 0 4px;font-size:15px;font-weight:600}
+.card p{margin:4px 0 0}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.conf{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.bar{width:54px;height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:11px;min-width:20px;height:20px;border-radius:6px;cursor:pointer;margin:0 2px;padding:0 5px}
+.chip:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cites{margin-top:8px;font-size:12px;color:var(--muted)}
+.ev-card{cursor:pointer}
+.ev-card:hover{border-color:var(--accent)}
+.ev-meta{font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.quote{border-left:3px solid var(--accent);padding-left:12px;color:#2b2a27}
+.rec{display:flex;gap:12px}
+.rec-n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--panel);font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:600}
+.hint{font-size:13px;color:var(--muted)}
+
+.overlay{position:fixed;inset:0;background:rgba(20,20,19,.25);display:none;z-index:10}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(440px,100%);background:var(--bg);border-left:1px solid var(--line);padding:26px 22px;transform:translateX(100%);transition:transform .2s;z-index:11;overflow-y:auto}
+.drawer.open{transform:none}
+.overlay.open{display:block}
+.drawer h3{font-family:var(--serif);font-weight:500;font-size:20px;margin:0 0 4px}
+.close{float:right;border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
+.d-url{font-family:ui-monospace,Consolas,monospace;font-size:12px;background:var(--panel);padding:8px 10px;border-radius:8px;word-break:break-all;margin-top:12px}
+.hidden{display:none}
+@media(max-width:800px){.app{grid-template-columns:1fr}aside{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><span class="dot"></span>Deep Research</div>
+    <div class="side-label" style="margin-top:0">Signed in as</div>
+    <select id="userSel">
+      <option value="admin">admin (full access)</option>
+      <option value="sales">sales (no finance)</option>
+      <option value="intern">intern (restricted)</option>
+    </select>
+    <button class="new-btn" id="newBtn">+ New research</button>
+    <div class="side-label">Recent research</div>
+    <div id="history"></div>
+  </aside>
+
+  <main>
+    <div class="wrap">
+      <div id="startView">
+        <h1>What should we investigate?</h1>
+        <p class="sub">Workmate searches your connected sources, cross-references the evidence and writes a cited report. It only reads what you are allowed to access.</p>
+        <div class="box">
+          <textarea id="question" placeholder="Ask a complex business question..."></textarea>
+          <div class="src-row" id="srcRow">
+            <label class="src"><input type="checkbox" value="slack" checked> Slack</label>
+            <label class="src"><input type="checkbox" value="documents" checked> Documents</label>
+            <label class="src"><input type="checkbox" value="meetings" checked> Meetings</label>
+            <label class="src off"><input type="checkbox" disabled> GitHub <small>soon</small></label>
+            <label class="src off"><input type="checkbox" disabled> CRM <small>soon</small></label>
+            <label class="src off"><input type="checkbox" disabled> Jira <small>soon</small></label>
+            <button class="go" id="goBtn">Start research</button>
+          </div>
+        </div>
+        <div class="examples">
+          <button class="ex">Why did our Q3 sales pipeline slow down?</button>
+          <button class="ex">Why are enterprise customers reporting onboarding issues?</button>
+          <button class="ex">What are the biggest product risks this quarter?</button>
+        </div>
+      </div>
+
+      <div id="runView" class="hidden">
+        <div class="progress" id="progress"></div>
+        <div id="report"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<aside class="drawer" id="drawer"></aside>
+
+<script>
+const STEPS = ["Understanding the question","Breaking question into research areas","Searching sources",
+  "Collecting evidence","Cross-referencing evidence","Identifying patterns","Generating report"];
+const SRC_LABEL = {slack:"Slack", documents:"Documents", meetings:"Meetings", github:"GitHub"};
+let user = localStorage.getItem("dr_user") || "admin";
+let timer = null, currentId = null, EV = {};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hdr = () => ({"Content-Type":"application/json","X-User-Id":user});
+const api = async (path, opts={}) => {
+  const r = await fetch(path, {...opts, headers: hdr()});
+  if (!r.ok) throw new Error(r.status === 404 ? "Not found" : "Request failed (" + r.status + ")");
+  return r.json();
+};
+const fmtDate = iso => new Date(iso + "Z").toLocaleDateString(undefined, {month:"short", day:"numeric"});
+const STATUS_LABEL = {completed:"Completed", failed:"Failed", queued:"Queued", planning:"Running",
+  searching:"Running", collecting_evidence:"Running", analyzing:"Running", generating_report:"Running"};
+
+/* ---------- user + navigation ---------- */
+$("#userSel").value = user;
+$("#userSel").onchange = e => { user = e.target.value; localStorage.setItem("dr_user", user); newResearch(); loadHistory(); };
+$("#newBtn").onclick = newResearch;
+document.querySelectorAll(".ex").forEach(b => b.onclick = () => { $("#question").value = b.textContent; $("#question").focus(); });
+
+function newResearch(){
+  clearInterval(timer); currentId = null;
+  $("#startView").classList.remove("hidden"); $("#runView").classList.add("hidden");
+  $("#goBtn").disabled = false; $("#question").value = "";
+  markActive();
+}
+
+/* ---------- history ---------- */
+async function loadHistory(){
+  try {
+    const items = await api("/api/research");
+    $("#history").innerHTML = items.length ? items.map(i => `
+      <div class="hist-item" data-id="${esc(i.id)}">
+        <div class="hist-q">${esc(i.question)}</div>
+        <div class="hist-m">${fmtDate(i.created_at)} &middot; ${STATUS_LABEL[i.status] || i.status}</div>
+      </div>`).join("") : '<div class="hist-empty">No research yet.</div>';
+    document.querySelectorAll(".hist-item").forEach(el => el.onclick = () => openResearch(el.dataset.id));
+    markActive();
+  } catch(e){ $("#history").innerHTML = '<div class="hist-empty">Could not load history.</div>'; }
+}
+function markActive(){
+  document.querySelectorAll(".hist-item").forEach(el => el.classList.toggle("active", el.dataset.id === currentId));
+}
+
+/* ---------- start + poll ---------- */
+$("#goBtn").onclick = async () => {
+  const question = $("#question").value.trim();
+  const sources = [...document.querySelectorAll("#srcRow input:checked")].map(i => i.value);
+  if (!question) return $("#question").focus();
+  if (!sources.length) return alert("Select at least one source.");
+  $("#goBtn").disabled = true;
+  try {
+    const r = await api("/api/research", {method:"POST", body: JSON.stringify({question, sources})});
+    currentId = r.research_id;
+    showRun(question);
+    loadHistory();
+    poll();
+  } catch(e){ alert(e.message); $("#goBtn").disabled = false; }
+};
+
+function showRun(question){
+  $("#startView").classList.add("hidden"); $("#runView").classList.remove("hidden");
+  $("#report").innerHTML = "";
+  renderProgress(question, STEPS.map(n => ({name:n, status:"pending", detail:""})), "queued");
+}
+
+function poll(){
+  clearInterval(timer);
+  const id = currentId;
+  const tick = async () => {
+    if (id !== currentId) return clearInterval(timer);
+    try {
+      const p = await api(`/api/research/${id}/progress`);
+      const r = await api(`/api/research/${id}`);
+      renderProgress(r.question, p.steps.length ? p.steps : STEPS.map(n => ({name:n,status:"pending",detail:""})), p.status, r.error);
+      if (p.status === "completed" || p.status === "failed"){
+        clearInterval(timer); loadHistory();
+        if (p.status === "completed") renderReport(r);
+      }
+    } catch(e){ clearInterval(timer); }
+  };
+  tick(); timer = setInterval(tick, 1000);
+}
+
+async function openResearch(id){
+  clearInterval(timer);
+  try {
+    const r = await api(`/api/research/${id}`);
+    currentId = id; markActive();
+    showRun(r.question);
+    if (r.status === "completed"){
+      renderProgress(r.question, r.steps, r.status);
+      renderReport(r);
+    } else if (r.status === "failed"){
+      renderProgress(r.question, r.steps, r.status, r.error);
+    } else poll();
+  } catch(e){ alert(e.message); }
+}
+
+/* ---------- progress ---------- */
+function renderProgress(question, steps, status, error){
+  const current = steps.find(s => s.status === "running");
+  $("#progress").innerHTML = `
+    <h2 class="q-title">${esc(question)}</h2>
+    <ul class="steps">${steps.map(s => `
+      <li class="step ${s.status}">
+        <span class="ic">${s.status === "done" ? "&#10003;" : ""}</span>
+        <span>${esc(s.name)}${s.status === "running" && s.detail ? `<span class="step-d">${esc(s.detail)}</span>` : (s.status === "done" && s.detail ? `<span class="step-d">${esc(s.detail)}</span>` : "")}</span>
+      </li>`).join("")}</ul>
+    ${status === "failed" ? `<div class="err">Research failed. ${esc((error || "").split("\n").filter(Boolean).pop() || "")}</div>` : ""}`;
+}
+
+/* ---------- report ---------- */
+function citeChips(ids){
+  return (ids || []).filter(i => EV[i]).map(i => `<button class="chip" data-ev="${esc(i)}" title="${esc(EV[i].reference)}">${EV[i].n}</button>`).join("");
+}
+function conf(c){
+  const pct = Math.round((c || 0) * 100);
+  return `<span class="conf"><span class="bar"><i style="width:${pct}%"></i></span>${pct}% confidence</span>`;
+}
+function evCard(e){
+  return `<div class="card ev-card" data-ev="${esc(e.id)}">
+    <div class="ev-meta"><span class="badge">${esc(SRC_LABEL[e.source_type] || e.source_type)}</span>
+      <span>${esc(e.reference)}</span><span>${esc(e.date)}</span></div>
+    <div class="quote">${esc(e.snippet)}</div></div>`;
+}
+
+function renderReport(r){
+  const rep = r.report; if (!rep) return;
+  EV = {};
+  rep.sources.forEach((s, i) => EV[s.id] = {...s, n: i + 1});
+  const st = rep.stats || {};
+  const srcChips = Object.entries(st.evidence_by_source || {}).map(([k,v]) => `<span class="badge">${v} from ${esc(SRC_LABEL[k] || k)}</span>`).join("");
+
+  let h = `<div class="report">
+    <div class="sec" style="margin-top:0"><h2>Executive summary</h2>
+      <p class="summary">${esc(rep.executive_summary)}</p>
+      <div class="stats"><span class="badge">${st.total_evidence || 0} evidence items</span>${srcChips}</div></div>`;
+
+  h += `<div class="sec"><h2>Key findings</h2>${(rep.key_findings || []).map(f => `
+    <div class="card"><div class="row">
+      <span class="badge ${f.kind === "evidence" ? "ev" : "inf"}">${f.kind === "evidence" ? "Evidence" : "Inference"}</span>${conf(f.confidence)}</div>
+      <div>${esc(f.statement)}</div><div class="cites">Sources ${citeChips(f.evidence_ids)}</div></div>`).join("") || '<p class="hint">No findings.</p>'}</div>`;
+
+  if ((rep.patterns || []).length) h += `<div class="sec"><h2>Major patterns</h2>${rep.patterns.map(p => `
+    <div class="card"><h3>${esc(p.title)}</h3><p>${esc(p.description)}</p>
+    <div class="cites">Evidence ${citeChips(p.evidence_ids)}</div></div>`).join("")}</div>`;
+
+  if ((rep.potential_causes || []).length) h += `<div class="sec"><h2>Potential causes</h2>
+    <p class="hint">These are inferences drawn from the evidence, not confirmed facts.</p>
+    ${rep.potential_causes.map((c, i) => `
+    <div class="card"><div class="row"><span class="badge inf">Potential cause ${i + 1}</span>
+      <span class="badge ${c.cross_source ? "multi" : "single"}">${c.cross_source ? "Multiple sources" : "Single source"}</span>${conf(c.confidence)}</div>
+      <h3>${esc(c.title)}</h3><p>${esc(c.explanation)}</p>
+      <div class="cites">Evidence ${citeChips(c.evidence_ids)}</div></div>`).join("")}</div>`;
+
+  if ((rep.examples || []).length) h += `<div class="sec"><h2>Customer and user examples</h2>${rep.examples.map(evCard).join("")}</div>`;
+
+  if ((rep.recommendations || []).length) h += `<div class="sec"><h2>Recommendations</h2>${rep.recommendations.map((x, i) => `
+    <div class="card rec"><div class="rec-n">${i + 1}</div><div>${esc(x.text)}
+      <div class="cites">Based on ${citeChips(x.based_on)}</div></div></div>`).join("")}</div>`;
+
+  h += `<div class="sec"><h2>Relevant conversations</h2>${(rep.relevant_conversations || []).map(evCard).join("")}</div>`;
+
+  h += `<div class="sec"><h2>Sources</h2>${rep.sources.map(s => `
+    <div class="card ev-card" data-ev="${esc(s.id)}"><div class="ev-meta">
+      <button class="chip">${EV[s.id].n}</button><span class="badge">${esc(SRC_LABEL[s.source_type] || s.source_type)}</span>
+      <span>${esc(s.reference)}</span><span>${esc(s.date)}</span></div></div>`).join("")}</div></div>`;
+
+  $("#report").innerHTML = h;
+}
+
+/* ---------- source drawer ---------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-ev]");
+  if (t && EV[t.dataset.ev]) openDrawer(EV[t.dataset.ev]);
+});
+function openDrawer(e){
+  $("#drawer").innerHTML = `
+    <button class="close" id="closeBtn">&times;</button>
+    <div class="ev-meta"><span class="badge">${esc(SRC_LABEL[e.source_type] || e.source_type)}</span><span>Source ${e.n}</span></div>
+    <h3>${esc(e.reference)}</h3>
+    <div class="hint">${esc(e.date)}</div>
+    <div class="card" style="margin-top:16px"><div class="quote">${esc(e.snippet)}</div></div>
+    <div class="hint" style="margin-top:14px">Original location</div>
+    <div class="d-url">${esc(e.url)}</div>
+    <p class="hint">In the POC this is a Workmate reference. In production this opens the original Slack thread, meeting or document page.</p>`;
+  $("#drawer").classList.add("open"); $("#overlay").classList.add("open");
+  $("#closeBtn").onclick = closeDrawer;
+}
+function closeDrawer(){ $("#drawer").classList.remove("open"); $("#overlay").classList.remove("open"); }
+$("#overlay").onclick = closeDrawer;
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawer(); });
+
+loadHistory();
+</script>
+</body>
+</html>
